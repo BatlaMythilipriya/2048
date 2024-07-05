@@ -1,0 +1,107 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int board[4][4];
+
+// 0 -> down, 1 -> right, 2 -> up, 3 -> left
+int along_row[] = {1, 0, -1, 0};
+int along_column[] = {0, 1, 0, -1};
+
+pair<int, int> random_position() {
+    int temp = 1, row, column;
+    while (temp) {
+        row = rand() % 4;
+        column = rand() % 4;
+        if (board[row][column] == 0)
+            temp = 0;
+    }
+    return {row, column};
+}
+
+void addpiece() {
+    pair<int, int> pos = random_position();
+    board[pos.first][pos.second] = 2;
+}
+
+void new_game() {
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            board[i][j] = 0;
+    addpiece(); // Add only one piece at the start of the game
+}
+
+void print() {
+    system("cls"); // Use "clear" for Linux/Mac
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (board[i][j] == 0)
+                cout << ".";
+            else
+                cout << board[i][j];
+            cout << " ";
+        }
+        cout << "\n";
+    }
+    cout << "n: new game  q: quit  u: up  d: down  r: right  l: left\n";
+}
+
+bool check(int row, int column, int next_row, int next_column) {
+    if (next_row < 0 || next_column < 0 || next_row >= 4 || next_column >= 4)
+        return false;
+    if (board[row][column] != board[next_row][next_column] && board[next_row][next_column] != 0)
+        return false;
+    return true;
+}
+
+void move(int direction) {
+    int startrow = 0, startcolumn = 0, row_jump = 1, column_jump = 1;
+    if (direction == 0) {
+        startrow = 3;
+        row_jump = -1;
+    }
+    if (direction == 1) {
+        startcolumn = 3;
+        column_jump = -1;
+    }
+    bool moved = false;
+    do {
+        moved = false;
+        for (int i = startrow; i >= 0 && i < 4; i += row_jump) {
+            for (int j = startcolumn; j >= 0 && j < 4; j += column_jump) {
+                int next_row = i + along_row[direction], next_column = j + along_column[direction];
+                if (board[i][j] && check(i, j, next_row, next_column)) {
+                    board[next_row][next_column] += board[i][j];
+                    board[i][j] = 0;
+                    moved = true;
+                }
+            }
+        }
+    } while (moved);
+    addpiece();
+}
+
+int main() {
+    srand(time(0));
+    map<char, int> command_transverse;
+    command_transverse['u'] = 2;
+    command_transverse['d'] = 0;
+    command_transverse['r'] = 1;
+    command_transverse['l'] = 3;
+
+    new_game();
+
+    while (true) {
+        print();
+        char command;
+        cin >> command;
+        if (command == 'n')
+            new_game();
+        else if (command == 'q')
+            break;
+        else {
+            int direction = command_transverse[command];
+            move(direction);
+        }
+    }
+    return 0;
+}
